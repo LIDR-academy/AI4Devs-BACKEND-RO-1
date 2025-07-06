@@ -185,4 +185,55 @@ paths:
           description: Invalid file type, only PDF and DOCX are allowed
         '500':
           description: Error during the file upload process
+  /positions/{id}/candidates:
+    get:
+      summary: Returns all applications for a given position, including the candidate's full name, the current interview step id, the application id, and the candidate's average interview score.
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: Position ID
+      responses:
+        '200':
+          description: Returns an array of objects with the fields: applicationId, fullName, currentInterviewStep, averageScore.
+        '400':
+          description: Invalid position id.
+        '404':
+          description: No applications found for this position.
+
+  /candidates/{id}/stage:
+    put:
+      summary: Updates the current interview step of a candidate's application.
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: Candidate ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                applicationId:
+                  type: integer
+                  description: Application ID to update
+                currentInterviewStep:
+                  type: integer
+                  description: New interview step ID
+              required:
+                - applicationId
+                - currentInterviewStep
+      responses:
+        '200':
+          description: Stage updated successfully, returns a message and the updated application object.
+        '400':
+          description: Invalid candidate id, applicationId, currentInterviewStep, or Interview step does not exist.
+        '404':
+          description: Application not found for this candidate.
 
