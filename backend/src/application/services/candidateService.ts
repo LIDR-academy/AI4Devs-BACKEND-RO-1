@@ -3,6 +3,9 @@ import { validateCandidateData } from '../validator';
 import { Education } from '../../domain/models/Education';
 import { WorkExperience } from '../../domain/models/WorkExperience';
 import { Resume } from '../../domain/models/Resume';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 export const addCandidate = async (candidateData: any) => {
     try {
@@ -62,4 +65,20 @@ export const findCandidateById = async (id: number): Promise<Candidate | null> =
         console.error('Error al buscar el candidato:', error);
         throw new Error('Error al recuperar el candidato');
     }
+};
+
+export const updateCandidateStage = async (candidateId: number, currentInterviewStep: number) => {
+    // Buscar la última aplicación activa del candidato (por fecha más reciente)
+    const application = await prisma.application.findFirst({
+        where: { candidateId },
+        orderBy: { applicationDate: 'desc' },
+    });
+    if (!application) {
+        throw new Error('No application found for this candidate');
+    }
+    // Actualizar la etapa
+    return await prisma.application.update({
+        where: { id: application.id },
+        data: { currentInterviewStep },
+    });
 };

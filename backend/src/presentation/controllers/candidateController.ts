@@ -1,5 +1,8 @@
 import { Request, Response } from 'express';
-import { addCandidate, findCandidateById } from '../../application/services/candidateService';
+import { addCandidate, findCandidateById, updateCandidateStage as updateCandidateStageService } from '../../application/services/candidateService';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 export const addCandidateController = async (req: Request, res: Response) => {
     try {
@@ -28,6 +31,23 @@ export const getCandidateById = async (req: Request, res: Response) => {
         res.json(candidate);
     } catch (error) {
         res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+export const updateCandidateStage = async (req: Request, res: Response) => {
+    const candidateId = parseInt(req.params.id);
+    const { currentInterviewStep } = req.body;
+    if (isNaN(candidateId) || typeof currentInterviewStep !== 'number') {
+        return res.status(400).json({ error: 'Invalid candidate ID or stage' });
+    }
+    try {
+        const updated = await updateCandidateStageService(candidateId, currentInterviewStep);
+        return res.json({ message: 'Stage updated', application: updated });
+    } catch (error: any) {
+        if (error.message === 'No application found for this candidate') {
+            return res.status(404).json({ error: error.message });
+        }
+        return res.status(500).json({ error: 'Internal server error' });
     }
 };
 
