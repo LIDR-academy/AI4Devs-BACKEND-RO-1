@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { addCandidate, getCandidateById } from '../presentation/controllers/candidateController';
+import { addCandidate, getCandidateById, getCandidatesByPosition, updateCandidateStage } from '../presentation/controllers/candidateController';
 
 const router = Router();
 
@@ -16,6 +16,13 @@ router.post('/', async (req, res) => {
     }
   }
 });
+
+// New endpoint: Get all candidates for a position (Kanban view)
+router.get('/positions/:id/candidates', getCandidatesByPosition);
+
+// New endpoint: Update candidate's interview stage
+router.put('/:id/stage', updateCandidateStage);
+
 
 router.get('/:id', getCandidateById);
 
