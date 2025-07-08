@@ -186,3 +186,173 @@ paths:
         '500':
           description: Error during the file upload process
 
+  /positions/{id}/candidates:
+    get:
+      summary: Get candidates for a specific position
+      description: Retrieves all candidates in the recruitment process for a specific position, including their current interview stage and average scores.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Position ID
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Candidates retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  positionId:
+                    type: integer
+                    description: ID of the position
+                  positionTitle:
+                    type: string
+                    description: Title of the position
+                  candidates:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        candidateId:
+                          type: integer
+                          description: ID of the candidate
+                        fullName:
+                          type: string
+                          description: Full name of the candidate
+                        email:
+                          type: string
+                          description: Email of the candidate
+                        currentInterviewStep:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                              description: Interview step ID
+                            name:
+                              type: string
+                              description: Name of the interview step
+                            orderIndex:
+                              type: integer
+                              description: Order of the step in the process
+                        averageScore:
+                          type: number
+                          format: float
+                          description: Average score from all interviews
+                        totalInterviews:
+                          type: integer
+                          description: Total number of interviews completed
+                        applicationDate:
+                          type: string
+                          format: date-time
+                          description: Date when the candidate applied
+        '400':
+          description: Invalid position ID
+        '404':
+          description: Position not found
+        '500':
+          description: Internal server error
+
+  /candidates/{id}/stage:
+    put:
+      summary: Update candidate interview stage
+      description: Updates the current interview stage of a specific candidate in the recruitment process.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Candidate ID
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - interviewStepId
+              properties:
+                interviewStepId:
+                  type: integer
+                  minimum: 1
+                  description: ID of the new interview step
+                notes:
+                  type: string
+                  maxLength: 500
+                  description: Optional notes about the stage change
+      responses:
+        '200':
+          description: Candidate stage updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  candidateId:
+                    type: integer
+                    description: ID of the candidate
+                  fullName:
+                    type: string
+                    description: Full name of the candidate
+                  email:
+                    type: string
+                    description: Email of the candidate
+                  updatedInterviewStep:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        description: Interview step ID
+                      name:
+                        type: string
+                        description: Name of the interview step
+                      orderIndex:
+                        type: integer
+                        description: Order of the step in the process
+                  previousInterviewStep:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        description: Previous interview step ID
+                      name:
+                        type: string
+                        description: Name of the previous interview step
+                      orderIndex:
+                        type: integer
+                        description: Order of the previous step
+                  updatedAt:
+                    type: string
+                    format: date-time
+                    description: Date when the stage was updated
+                  notes:
+                    type: string
+                    description: Notes about the stage change
+        '400':
+          description: Bad request (invalid input data or business rule violation)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message
+        '404':
+          description: Candidate not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message
+        '500':
+          description: Internal server error
+
