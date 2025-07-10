@@ -43,11 +43,64 @@ export class Application {
         }
     }
 
+    async getAverageScore(): Promise<number> {
+        const interviews = await prisma.interview.findMany({
+            where: { 
+                applicationId: this.id,
+                score: { not: null }
+            },
+            select: { score: true }
+        });
+
+        if (interviews.length === 0) return 0;
+
+        const totalScore = interviews.reduce((sum, interview) => sum + (interview.score || 0), 0);
+        return Number((totalScore / interviews.length).toFixed(1));
+    }
+
+    async updateInterviewStep(newStepId: number, notes?: string): Promise<void> {
+        const updateData: any = {
+            currentInterviewStep: newStepId,
+        };
+
+        if (notes) {
+            updateData.notes = notes;
+        }
+
+        await prisma.application.update({
+            where: { id: this.id },
+            data: updateData,
+        });
+
+        this.currentInterviewStep = newStepId;
+        if (notes) this.notes = notes;
+    }
+
     static async findOne(id: number): Promise<Application | null> {
         const data = await prisma.application.findUnique({
             where: { id: id },
         });
         if (!data) return null;
         return new Application(data);
+    }
+
+    static async findByPositionId(positionId: number): Promise<Application[]> {
+        const applications = await prisma.application.findMany({
+            where: { positionId: positionId },
+            include: {
+                candidate: true,
+                interviewStep: {
+                    include: {
+                        interviewType: true
+                    }
+                },
+                interviews: {
+                    where: { score: { not: null } },
+                    select: { score: true }
+                }
+            }
+        });
+
+        return applications.map(app => new Application(app));
     }
 }
