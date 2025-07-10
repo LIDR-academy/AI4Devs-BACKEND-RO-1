@@ -314,3 +314,46 @@ POST http://localhost:3010/candidates
 }
 ```
 
+## Pruebas unitarias y de integración (Backend)
+
+Para ejecutar las pruebas unitarias y de integración del backend, sigue estos pasos:
+
+1. Asegúrate de tener instaladas las dependencias de desarrollo necesarias:
+
+```sh
+cd backend
+npm install
+npm install --save-dev supertest @types/supertest
+```
+
+2. Ejecuta las pruebas con Jest:
+
+```sh
+npm test
+```
+
+Esto ejecutará todos los tests ubicados en `backend/src/__tests__`.
+
+### Pruebas incluidas para los nuevos endpoints
+
+- **Servicio:** `getCandidatesByPositionId` (archivo: `src/__tests__/positionService.test.ts`)
+- **Controlador:** `getCandidatesByPositionIdController` (archivo: `src/__tests__/positionController.test.ts`)
+
+Ambas pruebas cubren casos de éxito, errores de validación y errores internos.
+
+### Verificación de integración
+
+1. Inicia el backend:
+
+```sh
+npm run dev
+```
+
+2. Realiza una petición GET al endpoint:
+
+```
+GET http://localhost:3010/positions/{id}/candidates
+```
+
+Reemplaza `{id}` por el ID de la posición que deseas consultar. Deberías recibir un array con los candidatos, su etapa y puntuación media.
+
