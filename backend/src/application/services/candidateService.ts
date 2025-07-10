@@ -3,6 +3,9 @@ import { validateCandidateData } from '../validator';
 import { Education } from '../../domain/models/Education';
 import { WorkExperience } from '../../domain/models/WorkExperience';
 import { Resume } from '../../domain/models/Resume';
+import { PrismaClient } from '@prisma/client';
+
+const defaultPrisma = new PrismaClient();
 
 export const addCandidate = async (candidateData: any) => {
     try {
@@ -62,4 +65,42 @@ export const findCandidateById = async (id: number): Promise<Candidate | null> =
         console.error('Error al buscar el candidato:', error);
         throw new Error('Error al recuperar el candidato');
     }
+};
+
+/**
+ * Actualiza la etapa (currentInterviewStep) de un candidato para una posición.
+ * @param candidateId ID del candidato
+ * @param positionId ID de la posición
+ * @param newStage Nueva etapa (número)
+ * @param prisma Instancia de PrismaClient (opcional, para testing)
+ * @returns La aplicación actualizada
+ */
+export const updateCandidateStage = async (
+  candidateId: number,
+  positionId: number,
+  newStage: number,
+  prisma: PrismaClient = defaultPrisma
+) => {
+  if (!candidateId || isNaN(candidateId)) {
+    throw new Error('El ID del candidato es inválido');
+  }
+  if (!positionId || isNaN(positionId)) {
+    throw new Error('El ID de la posición es inválido');
+  }
+  if (!newStage || isNaN(newStage)) {
+    throw new Error('La nueva etapa es inválida');
+  }
+  // Buscar la aplicación correspondiente
+  const application = await prisma.application.findFirst({
+    where: { candidateId, positionId },
+  });
+  if (!application) {
+    throw new Error('No se encontró la aplicación para el candidato y posición especificados');
+  }
+  // Actualizar la etapa
+  const updated = await prisma.application.update({
+    where: { id: application.id },
+    data: { currentInterviewStep: newStage },
+  });
+  return updated;
 };
